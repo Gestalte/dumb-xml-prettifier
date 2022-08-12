@@ -67,17 +67,39 @@ function prettifyXml(xml) {
 				x += " ";
 			}
 
-			// TODO: newline attributes
+			arr[index] = arr[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
 
-			// line = line.replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
-			// line = line.replace(/\s/, "\n");
+			var temp = arr[index]
+				.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
+				.filter(ff => ff != "")
+				.filter(ff => ff != " ")
+				.map(mm => mm.trim());
+
+			var newtemp = temp.map(ff => {
+				var localPadding = paddingAmount + 4;
+				var padding = "";
+
+				for (let i = 0; i < localPadding; i++) {
+					padding += " ";
+				}
+
+				return (ff.substring(0, 1) == "<" ? "" + x : "\n" + padding) + ff;
+			});
+
+			var newStr = "";
+
+			newtemp.forEach(line => {
+				newStr += line;
+			});
+
+			// var newS = newtemp.join("    ");
 
 			// Cancel out closing tag />
 			if (arr[index].match(/\/>$/)) {
 				count--;
 			}
 
-			arr2.push(x + arr[index]);
+			arr2.push(newStr);
 		}
 
 		// Closing tag
