@@ -1,7 +1,7 @@
 {
   "name": "dumb-xml-prettifier",
   "displayName": "dumb-xml-prettifier",
-  "description": "Unopinionated Xml prettifier. It will only format your xml text, it will not improve or edit the content of the text. ",
+  "description": "An unopinionated XML prettifier. It will only format your XML text, it won't attempt to \"improve\" or edit the content of the text, only the whitespace.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.70.0"
@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:dumb-xml-prettifier.helloWorld"
+    "onCommand:dumb-xml-prettifier.prettify"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "dumb-xml-prettifier.helloWorld",
-        "title": "Hello World"
+        "command": "dumb-xml-prettifier.prettify",
+        "title": "Prettify"
       }
     ]
   },

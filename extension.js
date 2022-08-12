@@ -17,20 +17,50 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('dumb-xml-prettifier.helloWorld', function () {
+	let disposable = vscode.commands.registerCommand('dumb-xml-prettifier.prettify', function () {
 		// The code you place here will be executed every time your command is executed
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from dumb-xml-prettifier!');
+		var doc = vscode.window.activeTextEditor.document;
+
+		var docText = doc.getText();
+
+		var returnText = prettifyXml(docText);
+
+		vscode.workspace.openTextDocument({
+			language: 'xml'
+		})
+		.then(doc => vscode.window.showTextDocument(doc))
+		.then(editor => {
+			let editBuilder = textEdit => {
+                textEdit.insert( new vscode.Position( 0, 0 ), String( returnText ) );
+            };
+
+            return editor.edit( editBuilder, {
+                    undoStopBefore: true,
+                    undoStopAfter: false
+                } )
+                .then( () => editor );
+		});
+
+		vscode.window.showInformationMessage("Done.");
 	});
 
 	context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
 	activate,
 	deactivate
+}
+
+function prettifyXml(xml) {
+
+	// TODO: Format xml.
+
+	var newString="";	
+
+	return xml;
 }
