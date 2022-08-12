@@ -10,39 +10,21 @@ const vscode = require('vscode');
  */
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "dumb-xml-prettifier" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('dumb-xml-prettifier.prettify', function () {
-		// The code you place here will be executed every time your command is executed
 
-		var doc = vscode.window.activeTextEditor.document;
-
-		var docText = doc.getText();
+		var editor = vscode.window.activeTextEditor;
+		var docText = editor.document.getText();
 
 		var returnText = prettifyXml(docText);
 
-		vscode.workspace.openTextDocument({
-			language: 'xml'
-		})
-			.then(doc => vscode.window.showTextDocument(doc))
-			.then(editor => {
-				let editBuilder = textEdit => {
-					textEdit.insert(new vscode.Position(0, 0), String(returnText));
-				};
+		var lineCount = vscode.window.activeTextEditor.document.lineCount - 1;
+		var charCount = editor.document.lineAt(editor.document.lineCount - 1).text.length;
 
-				return editor.edit(editBuilder, {
-					undoStopBefore: true,
-					undoStopAfter: false
-				})
-					.then(() => editor);
-			});
-
-		vscode.window.showInformationMessage("Done.");
+		// Overwrite text in active document.
+		editor.edit(builder => {
+			builder.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(lineCount, charCount)));
+			builder.insert(new vscode.Position(0, 0), returnText);
+		});
 	});
 
 	context.subscriptions.push(disposable);
@@ -64,7 +46,6 @@ function prettifyXml(xml) {
 	var arr = string.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
 
 	var count = 0;
-
 	var arr2 = [];
 
 	for (let index = 0; index < arr.length; index++) {
