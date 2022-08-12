@@ -29,18 +29,18 @@ function activate(context) {
 		vscode.workspace.openTextDocument({
 			language: 'xml'
 		})
-		.then(doc => vscode.window.showTextDocument(doc))
-		.then(editor => {
-			let editBuilder = textEdit => {
-                textEdit.insert( new vscode.Position( 0, 0 ), String( returnText ) );
-            };
+			.then(doc => vscode.window.showTextDocument(doc))
+			.then(editor => {
+				let editBuilder = textEdit => {
+					textEdit.insert(new vscode.Position(0, 0), String(returnText));
+				};
 
-            return editor.edit( editBuilder, {
-                    undoStopBefore: true,
-                    undoStopAfter: false
-                } )
-                .then( () => editor );
-		});
+				return editor.edit(editBuilder, {
+					undoStopBefore: true,
+					undoStopAfter: false
+				})
+					.then(() => editor);
+			});
 
 		vscode.window.showInformationMessage("Done.");
 	});
@@ -58,9 +58,70 @@ module.exports = {
 
 function prettifyXml(xml) {
 
-	// TODO: Format xml.
+	var string = "";
+	string = xml;
 
-	var newString="";	
+	var arr = string.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
 
-	return xml;
+	var count = 0;
+
+	var arr2 = [];
+
+	for (let index = 0; index < arr.length; index++) {
+		// <?xml version="1.0" encoding="UTF-8"?> header thing.
+		if (arr[index].match(/^<\?/)) {
+			count--;
+
+			arr2.push(arr[index]);
+		}
+
+		// Opending tag
+		if (arr[index].match(/^<[^?\/]/)) {
+			count++;
+
+			var x = "";
+			var paddingAmount = count * 4;
+
+			for (let i = 0; i < paddingAmount; i++) {
+				x += " ";
+			}
+
+			// TODO: newline attributes
+
+			// line = line.replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
+			// line = line.replace(/\s/, "\n");
+
+			// Cancel out closing tag />
+			if (arr[index].match(/\/>$/)) {
+				count--;
+			}
+
+			arr2.push(x + arr[index]);
+		}
+
+		// Closing tag
+		if (arr[index].match(/^<\//)) {
+			if (index != 0) {
+				// Check that count wasn't already decreased due to previous tag ending with />
+				if (!arr[index - 1].match(/\/>$/)) {
+					count--;
+				}
+			} else {
+				count--;
+			}
+
+			var x = "";
+			var paddingAmount = count * 4;
+
+			for (let i = 0; i < paddingAmount; i++) {
+				x += " ";
+			}
+
+			arr2.push(x + arr[index]);
+		}
+	}
+
+	var newString = arr2.join("\n");
+
+	return newString;
 }
