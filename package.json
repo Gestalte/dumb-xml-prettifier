@@ -23,7 +23,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint"
   },
   "devDependencies": {
     "@types/vscode": "^1.70.0",
