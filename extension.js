@@ -107,7 +107,13 @@ function prettifyXml(xml) {
 			if (index != 0) {
 				// Check that count wasn't already decreased due to previous tag ending with />
 				if (!arr[index - 1].match(/\/>$/)) {
-					count--;
+					
+					var currentTag = arr[index];
+					var openingTag = currentTag.replace('/', '').replace('>', '');
+
+					if (!arr[index - 1].match(openingTag)) {
+						count--;
+					}
 				}
 			} else {
 				count--;
