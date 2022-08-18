@@ -53,12 +53,27 @@ function prettifyXml(xml) {
 		if (arr[index].match(/^<\?/)) {
 			count--;
 
-			arr2.push(arr[index]);
+			arr2.push((index == 0 ? "" : "\n") + arr[index]);
 		}
 
 		// Opending tag
 		if (arr[index].match(/^<[^?\/]/)) {
-			count++;
+
+			// NOTE: Not sure about this.
+			// TODO: Maybe capture entire element including its closing tag then fold closing tags later.
+			if (!arr[index - 1].match(/\/>$/)) {
+
+				var currentTag = arr[index];
+				var onlyTag = currentTag.match(/^<(.+?)\s/)[1];
+
+				var pattern = "^</" + onlyTag + ">";
+
+				if (!arr[index - 1].match(pattern)) {
+					count++;
+				}
+			} else {
+				count++
+			}
 
 			var x = "";
 			var paddingAmount = count * 4;
@@ -107,7 +122,7 @@ function prettifyXml(xml) {
 			if (index != 0) {
 				// Check that count wasn't already decreased due to previous tag ending with />
 				if (!arr[index - 1].match(/\/>$/)) {
-					
+
 					var currentTag = arr[index];
 					var openingTag = currentTag.replace('/', '').replace('>', '');
 
