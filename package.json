@@ -2,7 +2,7 @@
   "name": "dumb-xml-prettifier",
   "displayName": "dumb-xml-prettifier",
   "description": "An unopinionated XML prettifier. It will only format your XML text, it won't attempt to \"improve\" or edit the content of the text, only the whitespace.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.70.0"
   },
