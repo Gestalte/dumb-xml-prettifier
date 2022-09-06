@@ -38,114 +38,106 @@ module.exports = {
 	deactivate
 }
 
+/**
+ * @param {string} xml
+ */
 function prettifyXml(xml) {
 
-	var string = "";
-	string = xml;
+	var xmlLines = xml.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
 
-	var arr = string.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
+	var paddingLevel = 0;
+	var outputXmlLines = [];
 
-	var count = 0;
-	var arr2 = [];
-
-	for (let index = 0; index < arr.length; index++) {
+	for (let index = 0; index < xmlLines.length; index++) {
 		// <?xml version="1.0" encoding="UTF-8"?> header thing.
-		if (arr[index].match(/^<\?/)) {
-			count--;
+		if (xmlLines[index].match(/^<\?/)) {
+			paddingLevel--;
 
-			arr2.push((index == 0 ? "" : "\n") + arr[index]);
+			outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
 		}
 
 		// Opending tag
-		if (arr[index].match(/^<[^?\/]/)) {
+		if (xmlLines[index].match(/^<[^?\/]/)) {
 
-			// NOTE: Not sure about this.
-			// TODO: Maybe capture entire element including its closing tag then fold closing tags later.
-			if (!arr[index - 1].match(/\/>$/)) {
+			// /> at the end of the line
+			if (!xmlLines[index - 1].match(/\/>$/)) {
+				
+				var onlyElementName = xmlLines[index].match(/^<(.+?)\s/)[1];
 
-				var currentTag = arr[index];
-				var onlyTag = currentTag.match(/^<(.+?)\s/)[1];
+				var pattern = "^</" + onlyElementName + ">";
 
-				var pattern = "^</" + onlyTag + ">";
-
-				if (!arr[index - 1].match(pattern)) {
-					count++;
+				if (!xmlLines[index - 1].match(pattern)) {
+					paddingLevel++;
 				}
 			} else {
-				count++
+				paddingLevel++
 			}
 
-			var x = "";
-			var paddingAmount = count * 4;
+			let padding = "";
+			let paddingAmount = paddingLevel * 4;
 
 			for (let i = 0; i < paddingAmount; i++) {
-				x += " ";
+				padding += " ";
 			}
 
-			arr[index] = arr[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
+			xmlLines[index] = xmlLines[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
 
-			var temp = arr[index]
+			// Split element tag into element name and attributes
+			var elementParts = xmlLines[index]
 				.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
 				.filter(ff => ff != "")
 				.filter(ff => ff != " ")
 				.map(mm => mm.trim());
 
-			var newtemp = temp.map(ff => {
-				var localPadding = paddingAmount + 4;
-				var padding = "";
+			var paddedElementParts = elementParts.map(ff => {
+				
+				var amountOfLocalPadding = paddingAmount + 4;
+				
+				let localPadding = "";
 
-				for (let i = 0; i < localPadding; i++) {
-					padding += " ";
+				for (let i = 0; i < amountOfLocalPadding; i++) {
+					localPadding += " ";
 				}
 
-				return (ff.substring(0, 1) == "<" ? "" + x : "\n" + padding) + ff;
+				return (ff.substring(0, 1) == "<" ? "" + padding : "\n" + localPadding) + ff;
 			});
 
-			var newStr = "";
-
-			newtemp.forEach(line => {
-				newStr += line;
-			});
-
-			// var newS = newtemp.join("    ");
+			var newStr = paddedElementParts.flatMap((a) => a);
 
 			// Cancel out closing tag />
-			if (arr[index].match(/\/>$/)) {
-				count--;
+			if (xmlLines[index].match(/\/>$/)) {
+				paddingLevel--;
 			}
 
-			arr2.push(newStr);
+			outputXmlLines.push(newStr);
 		}
 
 		// Closing tag
-		if (arr[index].match(/^<\//)) {
+		if (xmlLines[index].match(/^<\//)) {
 			if (index != 0) {
 				// Check that count wasn't already decreased due to previous tag ending with />
-				if (!arr[index - 1].match(/\/>$/)) {
+				if (!xmlLines[index - 1].match(/\/>$/)) {
 
-					var currentTag = arr[index];
-					var openingTag = currentTag.replace('/', '').replace('>', '');
+					var openingTag = xmlLines[index].replace('/', '').replace('>', '');
 
-					if (!arr[index - 1].match(openingTag)) {
-						count--;
+					if (!xmlLines[index - 1].match(openingTag)) {
+						paddingLevel--;
 					}
 				}
 			} else {
-				count--;
+				paddingLevel--;
 			}
 
-			var x = "";
-			var paddingAmount = count * 4;
+			let padding = "";
+			var paddingAmount = paddingLevel * 4;
 
 			for (let i = 0; i < paddingAmount; i++) {
-				x += " ";
+				padding += " ";
 			}
 
-			arr2.push(x + arr[index]);
+			outputXmlLines.push(padding + xmlLines[index]);
 		}
 	}
 
-	var newString = arr2.join("\n");
-
-	return newString;
+	return outputXmlLines.join("\n");
 }
