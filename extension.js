@@ -45,6 +45,8 @@ function prettifyXml(xml) {
 
 	var xmlLines = xml.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
 
+	xmlLines = xmlLines.filter(f => f != '');
+
 	var paddingLevel = 0;
 	var outputXmlLines = [];
 
