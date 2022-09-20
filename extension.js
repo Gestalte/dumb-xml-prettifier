@@ -61,7 +61,7 @@ function prettifyXml(xml) {
 
 			// /> at the end of the line
 			if (!xmlLines[index - 1].match(/\/>$/)) {
-				
+
 				var onlyElementName = xmlLines[index].match(/^<(.+?)\s/)[1];
 
 				var pattern = "^</" + onlyElementName + ">";
@@ -90,9 +90,9 @@ function prettifyXml(xml) {
 				.map(mm => mm.trim());
 
 			var paddedElementParts = elementParts.map(ff => {
-				
+
 				var amountOfLocalPadding = paddingAmount + 4;
-				
+
 				let localPadding = "";
 
 				for (let i = 0; i < amountOfLocalPadding; i++) {
@@ -102,14 +102,14 @@ function prettifyXml(xml) {
 				return (ff.substring(0, 1) == "<" ? "" + padding : "\n" + localPadding) + ff;
 			});
 
-			var newStr = paddedElementParts.flatMap((a) => a);
+			var newStrArr = paddedElementParts.flatMap((a) => a);
 
 			// Cancel out closing tag />
 			if (xmlLines[index].match(/\/>$/)) {
 				paddingLevel--;
 			}
 
-			outputXmlLines.push(newStr);
+			outputXmlLines.push(newStrArr.join(""));
 		}
 
 		// Closing tag
