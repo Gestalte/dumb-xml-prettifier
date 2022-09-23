@@ -24,7 +24,7 @@ function activate(context) {
 				editBuilder.replace(editor.selection, returnText);
 			});
 		} else {
-			
+
 			var docText = editor.document.getText();
 
 			var returnText = prettifyXml(docText);
@@ -51,110 +51,141 @@ module.exports = {
 	deactivate
 }
 
+let outputXmlLines = [];
+let paddingLevel = 0;
+
 /**
  * @param {string} xml
  */
 function prettifyXml(xml) {
 
-	var xmlLines = xml.split(/(<[^>]*>)/gm).filter(m => m !== "").map(m => m.trim());
-
-	xmlLines = xmlLines
+	let xmlLines = xml
+		.split(/(<[^>]*>)/gm)
+		.filter(m => m !== "")
+		.map(m => m.trim())
 		.filter(f => f != '')
 		.map(f => f.replace(/\r\n/g, " "));
 
-	var paddingLevel = 0;
-	var outputXmlLines = [];
+	paddingLevel = 0;
+	outputXmlLines = [];
 
 	for (let index = 0; index < xmlLines.length; index++) {
+
 		// <?xml version="1.0" encoding="UTF-8"?> header thing.
 		if (xmlLines[index].match(/^<\?/)) {
-			paddingLevel--;
-
-			outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
+			header(xmlLines, index);
 		}
 
 		// Opending tag
 		if (xmlLines[index].match(/^<[^?\/]/)) {
-
-			// /> at the end of the line
-			if (!xmlLines[index - 1].match(/\/>$/)) {
-
-				var onlyElementName = xmlLines[index].match(/^<(.+?)\s/)[1];
-
-				var pattern = "^</" + onlyElementName + ">";
-
-				if (!xmlLines[index - 1].match(pattern)) {
-					paddingLevel++;
-				}
-			} else {
-				paddingLevel++
-			}
-
-			let padding = "";
-			let paddingAmount = paddingLevel * 4;
-
-			for (let i = 0; i < paddingAmount; i++) {
-				padding += " ";
-			}
-
-			xmlLines[index] = xmlLines[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
-
-			// Split element tag into element name and attributes
-			var elementParts = xmlLines[index]
-				.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
-				.filter(ff => ff != "")
-				.filter(ff => ff != " ")
-				.map(mm => mm.trim());
-
-			var paddedElementParts = elementParts.map(ff => {
-
-				var amountOfLocalPadding = paddingAmount + 4;
-
-				let localPadding = "";
-
-				for (let i = 0; i < amountOfLocalPadding; i++) {
-					localPadding += " ";
-				}
-
-				return (ff.substring(0, 1) == "<" ? "" + padding : "\n" + localPadding) + ff;
-			});
-
-			var newStrArr = paddedElementParts.flatMap((a) => a);
-
-			// Cancel out closing tag />
-			if (xmlLines[index].match(/\/>$/)) {
-				paddingLevel--;
-			}
-
-			outputXmlLines.push(newStrArr.join(""));
+			openingTag(xmlLines, index)
 		}
 
 		// Closing tag
 		if (xmlLines[index].match(/^<\//)) {
-			if (index != 0) {
-				// Check that count wasn't already decreased due to previous tag ending with />
-				if (!xmlLines[index - 1].match(/\/>$/)) {
-
-					var openingTag = xmlLines[index].replace('/', '').replace('>', '');
-
-					if (!xmlLines[index - 1].match(openingTag)) {
-						paddingLevel--;
-					}
-				}
-			} else {
-				paddingLevel--;
-			}
-
-			let padding = "";
-			var paddingAmount = paddingLevel * 4;
-
-			for (let i = 0; i < paddingAmount; i++) {
-				padding += " ";
-			}
-
-			outputXmlLines.push(padding + xmlLines[index]);
+			closingTag(xmlLines, index);
 		}
 	}
 
 	return outputXmlLines.join("\n");
+}
+
+/**
+ * @param {string[]} xmlLines
+ * @param {number} index
+ */
+function header(xmlLines, index) {
+
+	paddingLevel--;
+
+	outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
+}
+
+/**
+ * @param {string[]} xmlLines
+ * @param {number} index
+ */
+function openingTag(xmlLines, index) {
+
+	// /> at the end of the line
+	if (!xmlLines[index - 1].match(/\/>$/)) {
+
+		var onlyElementName = xmlLines[index].match(/^<(.+?)\s/)[1];
+
+		var pattern = "^</" + onlyElementName + ">";
+
+		if (!xmlLines[index - 1].match(pattern)) {
+			paddingLevel++;
+		}
+	} else {
+		paddingLevel++
+	}
+
+	let padding = "";
+	let paddingAmount = paddingLevel * 4;
+
+	for (let i = 0; i < paddingAmount; i++) {
+		padding += " ";
+	}
+
+	xmlLines[index] = xmlLines[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
+
+	// Split element tag into element name and attributes
+	var elementParts = xmlLines[index]
+		.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
+		.filter(ff => ff != "")
+		.filter(ff => ff != " ")
+		.map(mm => mm.trim());
+
+	var paddedElementParts = elementParts.map(ff => {
+
+		var amountOfLocalPadding = paddingAmount + 4;
+
+		let localPadding = "";
+
+		for (let i = 0; i < amountOfLocalPadding; i++) {
+			localPadding += " ";
+		}
+
+		return (ff.substring(0, 1) == "<" ? "" + padding : "\n" + localPadding) + ff;
+	});
+
+	var newStrArr = paddedElementParts.flatMap((a) => a);
+
+	// Cancel out closing tag />
+	if (xmlLines[index].match(/\/>$/)) {
+		paddingLevel--;
+	}
+
+	outputXmlLines.push(newStrArr.join(""));
+}
+
+/**
+ * @param {string[]} xmlLines
+ * @param {number} index
+ */
+function closingTag(xmlLines, index) {
+
+	if (index != 0) {
+		// Check that count wasn't already decreased due to previous tag ending with />
+		if (!xmlLines[index - 1].match(/\/>$/)) {
+
+			var openingTag = xmlLines[index].replace('/', '').replace('>', '');
+
+			if (!xmlLines[index - 1].match(openingTag)) {
+				paddingLevel--;
+			}
+		}
+	} else {
+		paddingLevel--;
+	}
+
+	let padding = "";
+	var paddingAmount = paddingLevel * 4;
+
+	for (let i = 0; i < paddingAmount; i++) {
+		padding += " ";
+	}
+
+	outputXmlLines.push(padding + xmlLines[index]);
 }
