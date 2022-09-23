@@ -54,9 +54,99 @@ module.exports = {
 }
 
 var prettifier = function () {
-	
+
 	let outputXmlLines = [];
 	let paddingLevel = 0;
+
+	function header(xmlLines, index) {
+
+		paddingLevel--;
+
+		outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
+	}
+
+	function openingTag(line, previousLine, index) {
+
+		// /> at the end of the line
+		if (!previousLine.match(/\/>$/)) {
+
+			var onlyElementName = line.match(/^<(.+?)\s/)[1];
+
+			var pattern = "^</" + onlyElementName + ">";
+
+			if (!previousLine.match(pattern)) {
+				paddingLevel++;
+			}
+		} else {
+			paddingLevel++
+		}
+
+		let padding = "";
+		let paddingAmount = paddingLevel * 4;
+
+		for (let i = 0; i < paddingAmount; i++) {
+			padding += " ";
+		}
+
+		line = line.replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
+
+		var newStrArr = indentAttributes(line, paddingAmount, padding).flatMap((a) => a);
+
+		// Cancel out closing tag />
+		if (line.match(/\/>$/)) {
+			paddingLevel--;
+		}
+
+		outputXmlLines.push(newStrArr.join(""));
+	}
+
+	function indentAttributes(line, paddingAmount, existingPadding) {
+
+		var elementParts = line
+			.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
+			.filter(ff => ff != "")
+			.filter(ff => ff != " ")
+			.map(mm => mm.trim());
+
+		return elementParts.map(ff => {
+
+			var amountOfLocalPadding = paddingAmount + 4;
+
+			let localPadding = "";
+
+			for (let i = 0; i < amountOfLocalPadding; i++) {
+				localPadding += " ";
+			}
+
+			return (ff.substring(0, 1) == "<" ? "" + existingPadding : "\n" + localPadding) + ff;
+		});
+	}
+
+	function closingTag(xmlLines, index) {
+
+		if (index != 0) {
+			// Check that count wasn't already decreased due to previous tag ending with />
+			if (!xmlLines[index - 1].match(/\/>$/)) {
+
+				var openingTag = xmlLines[index].replace('/', '').replace('>', '');
+
+				if (!xmlLines[index - 1].match(openingTag)) {
+					paddingLevel--;
+				}
+			}
+		} else {
+			paddingLevel--;
+		}
+
+		let padding = "";
+		var paddingAmount = paddingLevel * 4;
+
+		for (let i = 0; i < paddingAmount; i++) {
+			padding += " ";
+		}
+
+		outputXmlLines.push(padding + xmlLines[index]);
+	}
 
 	return {
 		prettifyXml: function (xml) {
@@ -74,107 +164,21 @@ var prettifier = function () {
 
 				// <?xml version="1.0" encoding="UTF-8"?> header thing.
 				if (xmlLines[index].match(/^<\?/)) {
-					this.header(xmlLines, index);
+					header(xmlLines, index);
 				}
 
 				// Opending tag
 				if (xmlLines[index].match(/^<[^?\/]/)) {
-					this.openingTag(xmlLines[index], xmlLines[index - 1], index)
+					openingTag(xmlLines[index], xmlLines[index - 1], index)
 				}
 
 				// Closing tag
 				if (xmlLines[index].match(/^<\//)) {
-					this.closingTag(xmlLines, index);
+					closingTag(xmlLines, index);
 				}
 			}
 
 			return outputXmlLines.join("\n");
-		},
-		header: function (xmlLines, index) {
-
-			paddingLevel--;
-
-			outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
-		},
-		openingTag: function (line, previousLine, index) {
-
-			// /> at the end of the line
-			if (!previousLine.match(/\/>$/)) {
-
-				var onlyElementName = line.match(/^<(.+?)\s/)[1];
-
-				var pattern = "^</" + onlyElementName + ">";
-
-				if (!previousLine.match(pattern)) {
-					paddingLevel++;
-				}
-			} else {
-				paddingLevel++
-			}
-
-			let padding = "";
-			let paddingAmount = paddingLevel * 4;
-
-			for (let i = 0; i < paddingAmount; i++) {
-				padding += " ";
-			}
-
-			line = line.replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
-
-			var newStrArr = this.indentAttributes(line, paddingAmount, padding).flatMap((a) => a);
-
-			// Cancel out closing tag />
-			if (line.match(/\/>$/)) {
-				paddingLevel--;
-			}
-
-			outputXmlLines.push(newStrArr.join(""));
-		},
-		indentAttributes: function (line, paddingAmount, existingPadding) {
-
-			var elementParts = line
-				.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
-				.filter(ff => ff != "")
-				.filter(ff => ff != " ")
-				.map(mm => mm.trim());
-
-			return elementParts.map(ff => {
-
-				var amountOfLocalPadding = paddingAmount + 4;
-
-				let localPadding = "";
-
-				for (let i = 0; i < amountOfLocalPadding; i++) {
-					localPadding += " ";
-				}
-
-				return (ff.substring(0, 1) == "<" ? "" + existingPadding : "\n" + localPadding) + ff;
-			});
-		},
-		closingTag: function (xmlLines, index) {
-
-			if (index != 0) {
-				// Check that count wasn't already decreased due to previous tag ending with />
-				if (!xmlLines[index - 1].match(/\/>$/)) {
-
-					var openingTag = xmlLines[index].replace('/', '').replace('>', '');
-
-					if (!xmlLines[index - 1].match(openingTag)) {
-						paddingLevel--;
-					}
-				}
-			} else {
-				paddingLevel--;
-			}
-
-			let padding = "";
-			var paddingAmount = paddingLevel * 4;
-
-			for (let i = 0; i < paddingAmount; i++) {
-				padding += " ";
-			}
-
-			outputXmlLines.push(padding + xmlLines[index]);
 		}
 	}
 }
