@@ -78,7 +78,7 @@ function prettifyXml(xml) {
 
 		// Opending tag
 		if (xmlLines[index].match(/^<[^?\/]/)) {
-			openingTag(xmlLines, index)
+			openingTag(xmlLines[index], xmlLines[index - 1], index)
 		}
 
 		// Closing tag
@@ -101,20 +101,16 @@ function header(xmlLines, index) {
 	outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
 }
 
-/**
- * @param {string[]} xmlLines
- * @param {number} index
- */
-function openingTag(xmlLines, index) {
+function openingTag(line, previousLine, index) {
 
 	// /> at the end of the line
-	if (!xmlLines[index - 1].match(/\/>$/)) {
+	if (!previousLine.match(/\/>$/)) {
 
-		var onlyElementName = xmlLines[index].match(/^<(.+?)\s/)[1];
+		var onlyElementName = line.match(/^<(.+?)\s/)[1];
 
 		var pattern = "^</" + onlyElementName + ">";
 
-		if (!xmlLines[index - 1].match(pattern)) {
+		if (!previousLine.match(pattern)) {
 			paddingLevel++;
 		}
 	} else {
@@ -128,16 +124,33 @@ function openingTag(xmlLines, index) {
 		padding += " ";
 	}
 
-	xmlLines[index] = xmlLines[index].replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
+	line = line.replace(/(.)\s\/>$/, "$1/>") // remove any space before closing tag />
 
-	// Split element tag into element name and attributes
-	var elementParts = xmlLines[index]
+	var newStrArr = indentAttributes(line, paddingAmount, padding).flatMap((a) => a);
+
+	// Cancel out closing tag />
+	if (line.match(/\/>$/)) {
+		paddingLevel--;
+	}
+
+	outputXmlLines.push(newStrArr.join(""));
+}
+
+/**
+ * Split element tag into element name and attributes
+ * @param {string} line
+ * @param {number} paddingAmount
+ * @param {string} existingPadding
+ */
+function indentAttributes(line, paddingAmount, existingPadding){
+
+	var elementParts = line
 		.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
 		.filter(ff => ff != "")
 		.filter(ff => ff != " ")
 		.map(mm => mm.trim());
 
-	var paddedElementParts = elementParts.map(ff => {
+	return elementParts.map(ff => {
 
 		var amountOfLocalPadding = paddingAmount + 4;
 
@@ -147,17 +160,8 @@ function openingTag(xmlLines, index) {
 			localPadding += " ";
 		}
 
-		return (ff.substring(0, 1) == "<" ? "" + padding : "\n" + localPadding) + ff;
+		return (ff.substring(0, 1) == "<" ? "" + existingPadding : "\n" + localPadding) + ff;
 	});
-
-	var newStrArr = paddedElementParts.flatMap((a) => a);
-
-	// Cancel out closing tag />
-	if (xmlLines[index].match(/\/>$/)) {
-		paddingLevel--;
-	}
-
-	outputXmlLines.push(newStrArr.join(""));
 }
 
 /**
