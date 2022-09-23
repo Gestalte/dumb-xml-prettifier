@@ -13,18 +13,31 @@ function activate(context) {
 	let disposable = vscode.commands.registerCommand('dumb-xml-prettifier.prettify', function () {
 
 		var editor = vscode.window.activeTextEditor;
-		var docText = editor.document.getText();
 
-		var returnText = prettifyXml(docText);
+		var selectedText = editor?.document.getText(editor.selection);
 
-		var lineCount = vscode.window.activeTextEditor.document.lineCount - 1;
-		var charCount = editor.document.lineAt(editor.document.lineCount - 1).text.length;
+		if (selectedText) {
 
-		// Overwrite text in active document.
-		editor.edit(builder => {
-			builder.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(lineCount, charCount)));
-			builder.insert(new vscode.Position(0, 0), returnText);
-		});
+			var returnText = prettifyXml(selectedText);
+
+			editor.edit(editBuilder => {
+				editBuilder.replace(editor.selection, returnText);
+			});
+		} else {
+			
+			var docText = editor.document.getText();
+
+			var returnText = prettifyXml(docText);
+
+			var lineCount = vscode.window.activeTextEditor.document.lineCount - 1;
+			var charCount = editor.document.lineAt(editor.document.lineCount - 1).text.length;
+
+			// Overwrite text in active document.
+			editor.edit(builder => {
+				builder.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(lineCount, charCount)));
+				builder.insert(new vscode.Position(0, 0), returnText);
+			});
+		}
 	});
 
 	context.subscriptions.push(disposable);
@@ -47,7 +60,7 @@ function prettifyXml(xml) {
 
 	xmlLines = xmlLines
 		.filter(f => f != '')
-		.map(f => f.replace(/\r\n/g," "));	
+		.map(f => f.replace(/\r\n/g, " "));
 
 	var paddingLevel = 0;
 	var outputXmlLines = [];
