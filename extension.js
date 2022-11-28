@@ -150,6 +150,7 @@ var prettifier = function () {
 
 	return {
 		prettifyXml: function (xml) {
+
 			let xmlLines = xml
 				.split(/(<[^>]*>)/gm)
 				.filter(m => m !== "")
@@ -162,23 +163,25 @@ var prettifier = function () {
 
 			for (let index = 0; index < xmlLines.length; index++) {
 
+				var currentLine = xmlLines[index];
+
 				// <?xml version="1.0" encoding="UTF-8"?> header thing.
-				if (xmlLines[index].match(/^<\?/)) {
+				if (currentLine.match(/^<\?/)) {
 					header(xmlLines, index);
 				}
 
 				// Opending tag
-				if (xmlLines[index].match(/^<[^?\/]/)) {
-					openingTag(xmlLines[index], xmlLines[index - 1], index)
+				if (currentLine.match(/^<[^?\/]/)) {
+					openingTag(currentLine, xmlLines[index - 1], index)
 				}
 
 				// Closing tag
-				if (xmlLines[index].match(/^<\//)) {
+				if (currentLine.match(/^<\//)) {
 					closingTag(xmlLines, index);
 				}
 			}
 
-			return outputXmlLines.join("\n");
+			return outputXmlLines.join("\n").replace(/\n\s+\n/g,'\n');
 		}
 	}
 }
