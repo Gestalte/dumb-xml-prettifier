@@ -17,7 +17,7 @@
     "commands": [
       {
         "command": "dumb-xml-prettifier.prettify",
-        "title": "Prettify"
+        "title": "dumb-xml-prettifier: Prettify XML"
       }
     ]
   },

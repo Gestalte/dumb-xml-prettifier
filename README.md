@@ -4,6 +4,6 @@ This is an extension for Visual Studio Code, it is an unopinionated XML prettifi
 
 ## Usage
 
-To prettify an entire documant: `Ctrl + Shift + P` then type `Prettify` and hit enter.
+To prettify an entire documant: `Ctrl + Shift + P` then type `Prettify XML` and select `dumb-xml-prettifier: Prettify XML`.
 
-To prettyfy only part of a document: Highlight the part you want to prettify then `Ctrl + Shift + P` then type `Prettify` and hit enter.
+To prettyfy only part of a document: Highlight the part you want to prettify then `Ctrl + Shift + P` then type `Prettify XML` and select `dumb-xml-prettifier: Prettify XML`.
