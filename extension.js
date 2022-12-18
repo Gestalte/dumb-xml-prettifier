@@ -14,7 +14,7 @@ function activate(context) {
 
 		var editor = vscode.window.activeTextEditor;
 
-		var selectedText = editor?.document.getText(editor.selection);
+		var selectedText = editor.document.getText(editor.selection);
 
 		var pretty = prettifier();
 
@@ -65,7 +65,7 @@ var prettifier = function () {
 		outputXmlLines.push((index == 0 ? "" : "\n") + xmlLines[index]);
 	}
 
-	function openingTag(line, previousLine, index) {
+	function openingTag(line, previousLine) {
 
 		// /> at the end of the line
 		if (!previousLine.match(/\/>$/)) {
@@ -172,7 +172,7 @@ var prettifier = function () {
 
 				// Opending tag
 				if (currentLine.match(/^<[^?\/]/)) {
-					openingTag(currentLine, xmlLines[index - 1], index)
+					openingTag(currentLine, xmlLines[index - 1])
 				}
 
 				// Closing tag
