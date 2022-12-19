@@ -20,6 +20,8 @@ jobs:
       with:
         node-version: 16.x
     - run: npm install
+    - name: Package
+      run: npm run package
     - name: Publish
       run: npm run deploy
       env:

@@ -26,7 +26,8 @@
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "node ./test/runTest.js",
-    "deploy": "vsce publish --yarn"
+    "package": "vsce package",
+		"deploy": "vsce publish -p"
   },
   "devDependencies": {
     "@types/vscode": "^1.70.0",
