@@ -7,12 +7,20 @@
   "engines": {
     "vscode": "^1.70.0"
   },
+  "icon": "images/icon.png",
+  "keywords": [
+		"xml",
+		"prettifier",
+		"formatters",
+		"extension"
+	],
+	"license": "MIT",
   "repository": {
 		"type": "git",
 		"url": "https://github.com/Gestalte/dumb-xml-prettifier.git"
 	},
   "categories": [
-    "Other"
+    "Formatters"
   ],
   "activationEvents": [
     "onCommand:dumb-xml-prettifier.prettify"
