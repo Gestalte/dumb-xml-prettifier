@@ -71,7 +71,7 @@ var prettifier = function () {
 			// /> at the end of the line
 			if (!previousLine.match(/\/>$/)) {
 
-				var onlyElementName = line.match(/^<(.+?)\s/)[1];
+				var onlyElementName = line.match(/^<(.+?)(\s|>$)/)[1];
 
 				var pattern = "^</" + onlyElementName + ">";
 
