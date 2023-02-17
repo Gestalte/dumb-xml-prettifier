@@ -67,19 +67,21 @@ var prettifier = function () {
 
 	function openingTag(line, previousLine) {
 
-		// /> at the end of the line
-		if (!previousLine.match(/\/>$/)) {
+		if (previousLine != undefined) {
+			// /> at the end of the line
+			if (!previousLine.match(/\/>$/)) {
 
-			var onlyElementName = line.match(/^<(.+?)\s/)[1];
+				var onlyElementName = line.match(/^<(.+?)\s/)[1];
 
-			var pattern = "^</" + onlyElementName + ">";
+				var pattern = "^</" + onlyElementName + ">";
 
-			if (!previousLine.match(pattern)) {
-				paddingLevel++;
+				if (!previousLine.match(pattern)) {
+					paddingLevel++;
+				}
+			} else {
+				paddingLevel++
 			}
-		} else {
-			paddingLevel++
-		}
+		} // Padding stays the same because its the first line.
 
 		let padding = "";
 		let paddingAmount = paddingLevel * 4;
@@ -181,7 +183,7 @@ var prettifier = function () {
 				}
 			}
 
-			return outputXmlLines.join("\n").replace(/\n\s+\n/g,'\n');
+			return outputXmlLines.join("\n").replace(/\n\s+\n/g, '\n');
 		}
 	}
 }
