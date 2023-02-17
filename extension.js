@@ -105,7 +105,7 @@ var prettifier = function () {
 	function indentAttributes(line, paddingAmount, existingPadding) {
 
 		var elementParts = line
-			.split(/(\w+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
+			.split(/([a-zA-Z-:_]+="[\w\d\s\-\.\*\+\=]+"\/?>?)/g)
 			.filter(ff => ff != "")
 			.filter(ff => ff != " ")
 			.map(mm => mm.trim());
